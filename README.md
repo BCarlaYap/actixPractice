@@ -3,6 +3,7 @@
 cargo run --bin server
 ```
 it will display the initial secret key.
+
 ### To run the client
 Given the initial secret key, run this locally:
 ```sh
@@ -13,6 +14,10 @@ Run this command:
 ```sh
 cargo run --bin client
 ```
+#### Access WebSocket From Other Device
+* through secret key: `ws://<server_ip_address>:8080/secret/<secret_key>`
+
+* if the device's ip address is already in the whitelist: `ws://<server_ip_address>:8080/success`
 
 ### Add IP 
 `POST http://localhost:8080/whitelist`
