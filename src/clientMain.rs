@@ -20,8 +20,10 @@ fn main()  {
     let sys = System::new("client");
 
     Arbiter::spawn(async {
+        let args: Vec<String> = std::env::args().collect();
+
         Client::new()
-            .ws("ws://0.0.0.0:8080/success/")
+            .ws(format!("ws://0.0.0.0:8080/connect/{}",args[1]))
             .connect()
             .await
             .map_err(|e| {

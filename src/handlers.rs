@@ -2,7 +2,7 @@
 
 use crate::session::*;
 use crate::server;
-use crate::models::{AddIP, RemoveIP,GetWhiteList,GetLocalList};
+use crate::models::{AddIP, RemoveIP,GetWhiteList,GetLocalList,ConfirmSecretKey};
 
 use std::collections::HashMap;
 
@@ -10,7 +10,36 @@ use actix_web_actors::ws;
 use actix_web::{web, Responder, HttpResponse, HttpRequest};
 use actix::{Addr, MailboxError};
 
+pub async fn connect_with_secret(req: HttpRequest,
+                                 stream: web::Payload,
+                                 server_data: web::Data<Addr<server::ServerActor>>
+) -> impl Responder {
+   let x = req.path().replace("/connect/","");
 
+    match server_data.as_ref().send(ConfirmSecretKey{secret_key:x}).await {
+        Ok(res) =>  if res {
+            let ip_addr = match req.head().peer_addr {
+                Some(soc_addr) => soc_addr.ip().to_string(),
+                _ => "0.0.0.0".to_string(),
+            };
+
+          match server_data.as_ref().send(AddIP{ ip_address: ip_addr }).await {
+                Ok(_) =>  ws::start(SessionActor,&req,stream),
+                Err(_) => Ok(HttpResponse::InternalServerError().json("failed to send AddIp command:{}"))
+            }
+        } else {
+            Ok(HttpResponse::InternalServerError().json("not confirmed"))
+
+        }
+
+        Err(e) => {
+            Ok(HttpResponse::InternalServerError().json(format!("failed to confirm key: {:?}",e)))
+        }
+    }
+
+
+
+}
 pub async fn connect_ws(req: HttpRequest,
                         stream: web::Payload,
                         server_data: web::Data<Addr<server::ServerActor>>
@@ -116,7 +145,7 @@ pub async fn add_ip(req: HttpRequest,server_data: web::Data<Addr<server::ServerA
         Ok(local_list) => {
             if local_list.contains_key(&ip_addr.await.clone()) {
                 match server_ref.send(AddIP{ ip_address: json.ip_address.clone() }).await {
-                    Ok(send_resp) => HttpResponse::Ok().json(send_resp),
+                    Ok(send_resp) => HttpResponse::Ok().json(format!("{{\"secret_key\":\"{}\" }}",send_resp)),
                     Err(_) => HttpResponse::InternalServerError().json("failed to send AddIp command:{}")
                 }
             } else {
@@ -146,7 +175,6 @@ async fn get_local_list(server_actor:&Addr<server::ServerActor>)
             Err(_) => HashMap::new()
         }
     })
-
 }
 
 

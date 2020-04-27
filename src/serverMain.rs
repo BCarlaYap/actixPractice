@@ -26,12 +26,12 @@ async fn main() -> io::Result<()> {
     let server_addr = server::ServerActor::new().start();
     let server_addr_clone = server_addr.clone();
 
-
     println!("server started http://{}:{}",config.server.host, config.server.port);
     let server1 = HttpServer::new(move||{
         App::new()
             .data(server_addr.clone())
             .wrap(middleware::Logger::default())
+            .service(web::resource("/connect/{_}").route(web::get().to(connect_with_secret)))
             .service(web::resource("/success/").route(web::get().to(connect_ws)))
             .service(web::resource("/fail/").route(web::get().to(fail_connect_ws)))
             .route("/whitelist{_:/?}", web::post().to(add_ip))

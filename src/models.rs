@@ -14,3 +14,8 @@ pub struct RemoveIP{
 pub struct GetWhiteList;
 
 pub struct GetLocalList;
+
+#[derive(Serialize,Deserialize)]
+pub struct ConfirmSecretKey{
+    pub secret_key:String
+}
