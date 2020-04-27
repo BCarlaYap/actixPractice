@@ -145,7 +145,7 @@ pub async fn add_ip(req: HttpRequest,server_data: web::Data<Addr<server::ServerA
         Ok(local_list) => {
             if local_list.contains_key(&ip_addr.await.clone()) {
                 match server_ref.send(AddIP{ ip_address: json.ip_address.clone() }).await {
-                    Ok(send_resp) => HttpResponse::Ok().json(format!("{{\"secret_key\":\"{}\" }}",send_resp)),
+                    Ok(send_resp) => HttpResponse::Ok().json(send_resp),
                     Err(_) => HttpResponse::InternalServerError().json("failed to send AddIp command:{}")
                 }
             } else {

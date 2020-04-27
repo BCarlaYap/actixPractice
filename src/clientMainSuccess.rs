@@ -13,8 +13,8 @@ fn main() {
     let sys = System::new("client");
 
     Arbiter::spawn(async {
-         match Client::new().ws("ws://0.0.0.0:8080/failed/").connect().await {
-             Ok(_) => println!("It's not suppose to be success"),
+         match Client::new().ws("ws://0.0.0.0:8080/success/").connect().await {
+             Ok(_) => println!("Ran successfully"),
              Err(_) => {
                  println!("unauthorized access");
                  std::process::exit(0);

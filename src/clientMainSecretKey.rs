@@ -53,6 +53,13 @@ fn main()  {
         }).unwrap();
     });
 
-    sys.run().unwrap();
+    match sys.run() {
+        Ok(_) => println!("Ran successfully"),
+        Err(e) => {
+            println!("Error:{:?}",e);
+            std::process::exit(0);
+        }
+    }
+
 }
 
